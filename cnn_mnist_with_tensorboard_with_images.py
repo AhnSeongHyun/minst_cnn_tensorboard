@@ -92,6 +92,7 @@ config = tf.contrib.tensorboard.plugins.projector.ProjectorConfig()
 embedding_config = config.embeddings.add()
 embedding_config.tensor_name = embedding.name
 embedding_config.sprite.image_path = HOMEDIR + '/sprite_1024.png'
+# noinspection PyInterpreter
 embedding_config.metadata_path = HOMEDIR + '/labels_1024.tsv'
 # Specify the width and height of a single thumbnail.
 embedding_config.sprite.single_image_dim.extend([28, 28])
