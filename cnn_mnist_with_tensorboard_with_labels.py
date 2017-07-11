@@ -8,6 +8,7 @@ import os
 from tensorflow.examples.tutorials.mnist import input_data
 mnist = input_data.read_data_sets("MNIST_data/", one_hot=True)
 LOGDIR='./log/tensorboard_label'
+HOMEDIR = '/Users/anseonghyun/workspace/minst_cnn_tensorboard'
 save_file = './log/tensorboard_label/model.ckpt'
 
 
@@ -89,13 +90,13 @@ writer.add_graph(sess.graph)
 config = tf.contrib.tensorboard.plugins.projector.ProjectorConfig()
 embedding_config = config.embeddings.add()
 embedding_config.tensor_name = embedding.name
-embedding_config.metadata_path = LOGDIR + 'labels_1024.tsv'
+embedding_config.metadata_path = HOMEDIR + '/labels_1024.tsv'
 tf.contrib.tensorboard.plugins.projector.visualize_embeddings(writer, config)
 
 print('Learning started. It takes sometime.')
 for epoch in range(training_epochs):
     avg_cost = 0
-    total_batch = int(1000 / batch_size)
+    total_batch = int(mnist.train.num_examples / batch_size)
 
     for i in range(total_batch):
 
