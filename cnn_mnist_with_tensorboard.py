@@ -7,6 +7,9 @@ import os
 
 from tensorflow.examples.tutorials.mnist import input_data
 mnist = input_data.read_data_sets("MNIST_data/", one_hot=True)
+LOGDIR='./log/tensorboard'
+save_file = './log/tensorboard/model.ckpt'
+
 
 # hyper parameters
 learning_rate = 0.001
@@ -75,6 +78,8 @@ print("Label: ", sess.run(tf.argmax(mnist.test.labels[r:r + 1], 1)))
 print("Prediction: ", sess.run(
     tf.argmax(logits, 1), feed_dict={X: mnist.test.images[r:r + 1]}))
 
+saver = tf.train.Saver()
+
 print('Learning started. It takes sometime.')
 for epoch in range(training_epochs):
     avg_cost = 0
@@ -86,8 +91,11 @@ for epoch in range(training_epochs):
         feed_dict = {X: batch_xs, Y: batch_ys}
         c, _ = sess.run([cost, optimizer], feed_dict=feed_dict)
         avg_cost += c / total_batch
+
     print('Epoch:', '%04d' % (epoch + 1), 'cost =', '{:.9f}'.format(avg_cost))
 print('Learning Finished!')
+saver.save(sess, os.path.join(LOGDIR, "model.ckpt"), i)
+print('Save Model : %s' % save_file)
 
 correct_prediction = tf.equal(tf.argmax(logits, 1), tf.argmax(Y, 1))
 accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))

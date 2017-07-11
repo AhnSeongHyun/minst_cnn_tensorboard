@@ -7,6 +7,9 @@ import os
 
 from tensorflow.examples.tutorials.mnist import input_data
 mnist = input_data.read_data_sets("MNIST_data/", one_hot=True)
+LOGDIR='./log/tensorboard_images'
+save_file = './log/tensorboard_images/model.ckpt'
+
 
 # hyper parameters
 learning_rate = 0.001
@@ -75,6 +78,23 @@ print("Label: ", sess.run(tf.argmax(mnist.test.labels[r:r + 1], 1)))
 print("Prediction: ", sess.run(
     tf.argmax(logits, 1), feed_dict={X: mnist.test.images[r:r + 1]}))
 
+embedding = tf.Variable(tf.zeros([1024, 10]), name="test_embedding")
+assignment = embedding.assign(logits)
+saver = tf.train.Saver()
+
+sess.run(tf.global_variables_initializer())
+writer = tf.summary.FileWriter(LOGDIR + "/embedding_images")
+writer.add_graph(sess.graph)
+
+config = tf.contrib.tensorboard.plugins.projector.ProjectorConfig()
+embedding_config = config.embeddings.add()
+embedding_config.tensor_name = embedding.name
+embedding_config.sprite.image_path = LOGDIR + 'sprite_1024.png'
+embedding_config.metadata_path = LOGDIR + 'labels_1024.tsv'
+# Specify the width and height of a single thumbnail.
+embedding_config.sprite.single_image_dim.extend([28, 28])
+tf.contrib.tensorboard.plugins.projector.visualize_embeddings(writer, config)
+
 print('Learning started. It takes sometime.')
 for epoch in range(training_epochs):
     avg_cost = 0
@@ -86,8 +106,14 @@ for epoch in range(training_epochs):
         feed_dict = {X: batch_xs, Y: batch_ys}
         c, _ = sess.run([cost, optimizer], feed_dict=feed_dict)
         avg_cost += c / total_batch
+
+        if i % 500 == 0:
+            sess.run(assignment, feed_dict={X: mnist.test.images[:1024], Y: mnist.test.labels[:1024]})
+            saver.save(sess, os.path.join(LOGDIR, "model.ckpt"), i)
     print('Epoch:', '%04d' % (epoch + 1), 'cost =', '{:.9f}'.format(avg_cost))
 print('Learning Finished!')
+
+print('Save Model : %s' % save_file)
 
 correct_prediction = tf.equal(tf.argmax(logits, 1), tf.argmax(Y, 1))
 accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
